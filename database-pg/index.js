@@ -1,21 +1,16 @@
 const config = require('./config.js');
 let knex;
 
-if (config.pg) {
+if (config.mySql) {
+  knex = require('knex')({
+    client: 'mysql',
+    connection: config.mySql
+  });
+} else {
   knex = require('knex')({
     client: 'pg',
     connection: config.local ||process.env.DATABASE_URL,
     ssl: true
-  });
-} else {
-  knex = require('knex')({
-    client: 'mysql',
-    connection: {
-      host: 'localhost',
-      user: 'root',
-      password: 'root',
-      database: 'grnfld'
-    }
   });
 }
 
