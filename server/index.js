@@ -3,21 +3,38 @@ const passport = require('passport');
 const GithubStrategy = require('passport-github').Strategy;
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const clientSecret = require('./config.js').clientSecret;
+const config = require('./config.js');
+
 const db = require('../database-pg/index');
+const jwt = require('jwt-simple');
 
 const app = express();
 app.use(express.static(__dirname + '/../app'));
 app.use(express.static(__dirname + '/../node_modules'));
+
 app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(passport.initialize());
+app.use(session({
+  secret: 'keyboard dog',
+  cookie: {
+    maxAge: 600000
+  },
+  resave: false,
+  saveUninitialized: true
+}));
+
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.set('view engine', 'html');
 
 //require github users (github user model)
 //var Github_User = require('./app/mode')
 // var items = require('../database-pg');
 
 passport.serializeUser(function (user, done) {
+  console.log('serialize user', user);
   done(null, user);
 });
 
@@ -26,41 +43,71 @@ passport.deserializeUser(function (obj, done) {
 });
 
 passport.use(new GithubStrategy({
-  clientID: '0830e094214ee729f7a7',
-  clientSecret: clientSecret,
-  callbackURL: "http://localhost:3000/auth/github/callback" /*process.env.GITHUB_CLIENT_SECRET process.env.  GITHUB_CLIENT_ID || ||  http://grnfld.herokuapp.com/auth/github/callback*/
+  clientID: config.clientID,
+  clientSecret: config.clientSecret,
+  callbackURL: "http://127.0.0.1:3000/auth/github/callback"
 },
   function (accessToken, refreshToken, profile, callback) {
-    //pull ID and username from profile and save to database using knex(?)
-    console.log(accessToken, refreshToken, profile);
+    console.log('access Token', accessToken);
+    console.log('refresh Token', refreshToken);
+    console.log('profile', profile);
+    callback(null, profile);
+  }
+));
 
-    callback();
-  }));
+const jsonParser = bodyParser.json();
 
-
-
-
-
-
-
-app.get('/auth/github',
-  passport.authenticate('github')
-);
-
+app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/' }),
   function (req, res) {
-    // Successful authentication, redirect home.
-    req.session.isAuthenticated = true;
-    res.redirect('/');
-  });
+    const payload = req.user;
+    const secret = config.clientSecret;
+    const token = jwt.encode(payload, secret);
+    // req.session.loggedin = true;
+    res.redirect(`/`);
+  }
+);
+
+app.get('/submit', (req, res) => {
+  res.redirect('/');
+});
 
 app.get('/posts', (req, res) => {
-  console.log('here')
-  db.getAllPosts(data => res.json(data))
+  db.getAllPosts(data => res.json(data));
 });
+
+app.get('/test', (req, res) => {
+  // wrap this in a promise/async/await
+  let postsWithComments = async () => {
+    res.json(await db.getPostsWithCommentsAsync());
+
+  };
+
+  postsWithComments();
+
+  // res.json(db.getPostsWithCommentsAsync());  //doesn't work
+});
+// app.get('/posts', (req, res) => {
+//   db.getAllPosts(data => {
+//     res.json(data);
+//   });
+// });
+
+// app.get('/comments/:postid', (req, res) => {
+//   db.getComments()
+// });
 
 app.listen(process.env.PORT || 3000, function () {
   console.log('listening on port 3000!');
+});
+
+app.post('/createNewPost', (req, res) => {
+  console.log('inside createpost');
+  console.log(req.body);
+  db.createPost(req.body, (data) => {
+    console.log(data);
+    res.end();
+  });
 });
