@@ -7,10 +7,15 @@ if (config.pg) {
     connection: config.local ||process.env.DATABASE_URL,
     ssl: true
   });
-} else if (config.mySql){
+} else {
   knex = require('knex')({
     client: 'mysql',
-    connection: config.mySql
+    connection: {
+      host: 'localhost',
+      user: 'root',
+      password: 'root',
+      database: 'grnfld'
+    }
   });
 }
 
@@ -33,7 +38,7 @@ const getAllPostsPromise = () => {
   return new Promise(function(resolve, reject) {
 
   })
-}
+};
 async function getPostsWithCommentsAsync() {
   //get all posts with username
   const posts = await knex.select().from('posts')
@@ -61,8 +66,6 @@ const createPost = (post, callback) => {
     callback(data)
   });
 };
-
-
 
 module.exports = {
   getAllPosts: getAllPosts,
