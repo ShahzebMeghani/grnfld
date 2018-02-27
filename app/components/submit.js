@@ -17,7 +17,7 @@ angular.module('app')
     //updates variable with post object
     function createNewPost(post) {
         console.log('post', post);
-        $scope.newPost = angular.copy(post);    //angular.copy used to only set object after submit button is clicked
+        // $scope.newPost = angular.copy(post);    //angular.copy used to only set object after submit button is clicked
     }
 
     //allows function to be public. No $scope = private function

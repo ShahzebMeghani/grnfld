@@ -50,12 +50,12 @@ async function getPostsWithCommentsAsync() {
 }
 
 const createPost = (post, callback) => {
-  knex('post').insert({
+  knex('posts').insert({
     user_id: post.githubUserId,
     title: post.title,
     code: post.code,
     summary: post.summary,
-    anonymous: post.anonymous
+    anon: post.anonymous
   }).then( (data) => {
     console.log('before callback');
     callback(data)
