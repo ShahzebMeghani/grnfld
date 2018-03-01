@@ -1,23 +1,27 @@
 angular.module('app')
 .controller('MainCtrl', function ($scope, postsService, $rootScope, commentService) {
-  $scope.currentPage = 1;
-  $scope.numPerPage = 5;
+  $scope.init = function() {
+    $scope.currentPage = 1;
+    $scope.numPerPage = 5;
 
-  //get all posts on page load
-  postsService.getAll(data => {
-    console.log('got posts');
-    $scope.posts = data;
+    //get all posts on page load
+    postsService.getAll(data => {
+      console.log('got posts');
+      $scope.posts = data;
 
-    //pagination
-    $scope.$watch('currentPage + numPerPage', function () {
-      //filter posts by page number
-      let begin = (($scope.currentPage - 1) * $scope.numPerPage);
-      let end = begin + $scope.numPerPage;
+      //pagination
+      $scope.$watch('currentPage + numPerPage', function () {
+        //filter posts by page number
+        let begin = (($scope.currentPage - 1) * $scope.numPerPage);
+        let end = begin + $scope.numPerPage;
 
-      $scope.filteredPosts = $scope.posts.slice(begin, end);
+        $scope.filteredPosts = $scope.posts.slice(begin, end);
+      });
     });
-  });
+  };
 
+  //runs init on view startup
+  $scope.init();
 
   $scope.handlePostClick = (clickedValue) => {
     $scope.currentPost = $scope.filteredPosts[clickedValue];
@@ -29,6 +33,10 @@ angular.module('app')
 
   };
 
+  //hacky way of refreshing the current view to get new posts
+  $scope.refresh = () => {
+    $scope.init();
+  };
 
   $scope.message = '';
 
