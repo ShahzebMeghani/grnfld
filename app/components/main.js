@@ -1,5 +1,5 @@
 angular.module('app')
-.controller('MainCtrl', function ($scope, postsService, $rootScope) {
+.controller('MainCtrl', function ($scope, postsService, $rootScope, commentService) {
   $scope.currentPage = 1;
   $scope.numPerPage = 5;
   
