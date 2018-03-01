@@ -9,21 +9,22 @@ if (config.mySql) {
 } else {
   knex = require('knex')({
     client: 'pg',
-    connection: config.local ||process.env.DATABASE_URL,
+    connection: process.env.DATABASE_URL,
     ssl: true
-  });
+  })
 }
-
-const getAllPosts = ( (callback) => {
+const getAllPosts = (callback) => {
   knex.select().from('posts')
-      .leftOuterJoin('users', 'users.user_id', 'posts.user_id')
+    .orderBy('post_id', 'desc')
+    .leftOuterJoin('users', 'users.user_id', 'posts.user_id')
     .then(data => callback(data))
     .catch(err => callback(err.message));
-});
+};
 
 const getComments = (postId, callback) => {
   knex.select().from('comments')
-      .where('post_id', postId)
+    .leftOuterJoin('users', 'users.user_id', 'comments.user_id')
+    .where('post_id', postId)
     .then(data => callback(data))
     .catch(err => callback(err.message));
 };
@@ -51,20 +52,47 @@ async function getPostsWithCommentsAsync() {
 
 const createPost = (post, callback) => {
   knex('posts').insert({
-    user_id: post.githubUserId,
+    user_id: post.userId,
     title: post.title,
-    code: post.code,
-    summary: post.summary,
-    anon: post.anonymous
+    code: post.codebox,
+    summary: post.description,
+    anon: false //hard coded to false until functionality implemented
+  }).then( (data) => {
+    callback(data)
+  });
+};
+
+const createComment = (comment, callback) => {
+  knex('comments').insert({
+    user_id: comment.user_id,
+    post_id: comment.post_id,
+    message: comment.message
   }).then( (data) => {
     console.log('before callback');
     callback(data)
   });
 };
 
+const checkCredentials = async (username) => {
+  return await knex.select().from('users').where('username', username);
+};
+
+const createUser = async (username, password) => {
+  const query = await knex.select().from('users').where('username', username);
+
+  if (query.length) {
+    return 'already exists';
+  } else {
+    return await knex('users').insert({ username: username, password: password});
+  }
+};
+
 module.exports = {
   getAllPosts: getAllPosts,
   createPost: createPost,
   getComments: getComments,
-  getPostsWithCommentsAsync: getPostsWithCommentsAsync
+  getPostsWithCommentsAsync: getPostsWithCommentsAsync,
+  checkCredentials: checkCredentials,
+  createUser: createUser,
+  createComment: createComment
 };
