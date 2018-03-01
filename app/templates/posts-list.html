@@ -26,7 +26,7 @@
                       <p>{{currentPost.summary}}</p>
                     </div>
                     <div class="modal-footer">
-                        <div ng-repeat="comment in comments track by $index" class="comments-list">
+                        <div ng-repeat="comment in comments track by $index" class="comments-list" ng-class="{'solution': comment.solution}">
                             <div class="media">
                                 <p class="pull-right"><small></small></p>
 <!--                                  <a class="media-left" href="#">
@@ -37,7 +37,7 @@
                                    <h4 class="media-heading user_name">{{comment.username}} says:</h4>
                                    {{comment.message}}
                                    
-                                   <p><small><a href="">Like</a> - <a href="">Mark as Solution</a> Votes: {{comment.votes}}
+                                   <p><small><a ng-click="likeComment(currentPost.user_id, $root.userId)" href="">Like</a> - <a ng-show="currentPost.user_id === $root.userId" ng-click="selectSolution(comment)" href="">Mark as Solution</a> Votes: {{comment.votes}}
                                     <div>{{comment.created_at.slice(0, 10)}}</div></small></p>
                                  </div>
                             </div>
