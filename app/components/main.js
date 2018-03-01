@@ -19,13 +19,12 @@ angular.module('app')
   });
 
 
-  $scope.handlePostClick = (clickedvalue) => {
-    let actualValue = (($scope.currentPage - 1) * 5) + clickedvalue; //index of post in array from all posts
-    $scope.currentPost = $scope.posts[actualValue];
+  $scope.handlePostClick = (clickedValue) => {
+    $scope.currentPost = $scope.filteredPosts[clickedValue];
     //get all comments from clicked post
     postsService.getComments($scope.currentPost.post_id, (data) => {
       $scope.comments = data;
-      $scope.currentIndex = clickedvalue; //sets index for when submit comment is clicked
+      $scope.currentIndex = clickedValue; //sets index for when submit comment is clicked
     });
 
   };
