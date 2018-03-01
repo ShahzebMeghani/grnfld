@@ -27,6 +27,8 @@
                     </div>
                     <div class="modal-footer">
                         <div ng-repeat="comment in comments track by $index" class="comments-list" ng-class="{'solution': comment.solution}">
+                            <!--designate solution for post-->
+                            <span ng-class="{'glyphicon glyphicon-star': comment.solution}" aria-hidden="true"></span>
                             <div class="media">
                                 <p class="pull-right"><small></small></p>
 <!--                                  <a class="media-left" href="#">
