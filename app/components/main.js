@@ -89,8 +89,8 @@ angular.module('app')
     }
   };
 
-  // $scope.modal = () => {
-  //   console.log('inside modal');
-  //   BootstrapDialog.alert('I want banana!');
-  // }
+  $scope.modal = () => {
+    console.log('inside modal');
+    BootstrapDialog.alert('I want banana!');
+  }
 });
