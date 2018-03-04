@@ -89,6 +89,7 @@ angular.module('app')
     }
   };
 
+  //test alert - use when client tries to use too many coins
   $scope.modal = () => {
     console.log('inside modal');
     BootstrapDialog.alert('I want banana!');
