@@ -8,6 +8,7 @@ if (config.mySql) {
   });
 } else {
   knex = require('knex')({
+
     client: 'pg',
     connection: process.env.DATABASE_URL,
     ssl: true
@@ -63,16 +64,19 @@ const createComment = (comment, callback) => {
     user_id: comment.user_id,
     post_id: comment.post_id,
     message: comment.message
-  }).then(data => callback(data, null))
+  }).orderBy('comment_id', 'asc')
+    .then(data => callback(data, null))
     .catch(err => callback(null, err));
 };
 
 const checkCredentials = async (username) => {
-  return await knex.select().from('users').where(knex.raw(`LOWER(username) = LOWER('${username}')`));
+  return await knex.select().from('users')
+    .where(knex.raw(`LOWER(username) = LOWER('${username}')`));
 };
 
 const createUser = async (username, password) => {
-  const query = await knex.select().from('users').where(knex.raw(`LOWER(username) = LOWER('${username}')`));
+  const query = await knex.select().from('users')
+    .where(knex.raw(`LOWER(username) = LOWER('${username}')`));
 
   if (query.length) {
     return 'already exists';
