@@ -20,6 +20,7 @@ angular.module('app')
         } else {
           console.log('userid', res.data.user_id);
           $rootScope.userId = res.data.user_id;
+          $rootScope.hackcoin = res.data.hackcoin;
           $location.path('/');
         }
       });
