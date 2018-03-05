@@ -15,50 +15,53 @@ let refreshCoins = setInterval( () => {
 }, timer);
 
 
-app.get('/posts', (req, res) => {
-  db.getAllPosts(data => res.json(data));
+app.get('/posts', async (req, res) => {
+  let posts = await db.getAllPosts();
+  res.json(posts);
 });
 
-app.get('/test', (req, res) => {
+// app.get('/test', (req, res) => {
   // wrap this in a promise/async/await
-  let postsWithComments = async () => {
-    res.json(await db.getPostsWithCommentsAsync());
+  // let postsWithComments = async () => {
+    // res.json(await db.getPostsWithCommentsAsync());
 
-  };
+  // };
 
-  postsWithComments();
+  // postsWithComments();
 
   // res.json(db.getPostsWithCommentsAsync());  //doesn't work
-});
+// });
 
-app.get('/comments', (req, res) => {
+app.get('/comments', async (req, res) => {
   let postId = req.query.postId;
-  db.getComments(postId, data => res.json(data));
+  let comments = await db.getComments(postId);
+  res.json(comments);
 });
 
-app.post('/createPost', (req, res) => {
-  console.log('new post: ', req.body);
-  db.createPost(req.body, (data, err) => {
-    if (err) console.log(err.code);
-    res.end();
-  });
+app.post('/createPost', async (req, res) => {
+  try {
+    await db.createPost(req.body);
+  } catch (err) {
+    console.log(err);
+  }
+  res.end();
 });
 
-app.post('/createComment', (req, res) => {
-  console.log('new comment: ', req.body);
+app.post('/createComment', async (req, res) => {
   let comment = req.body;
-  // db.getComments(postId, data => res.json(data));
-  db.createComment(comment, (data, err) => {
-    if (err) console.log(err.code);
-    res.end();
-  });
+  try {
+    await db.createComment(comment);
+  } catch (err) {
+    console.log(err);
+  }
+  res.end();
 });
 
 app.post('/login', async (req, res) => {
   const userInfo = await db.checkCredentials(req.body.username);
 
   if (userInfo.length) {
-    const user = userInfo[0]
+    const user = userInfo[0];
     if (bcrypt.compareSync(req.body.password, user.password)) {
       res.status(200).json({
         user_id: user.user_id,
@@ -71,7 +74,6 @@ app.post('/login', async (req, res) => {
   } else {
     res.status(401).send('username doesn\'t exist');
   }
-  
 });
 
 app.post('/register', async (req, res) => {
@@ -83,20 +85,17 @@ app.post('/register', async (req, res) => {
     const userInfo = await db.checkCredentials(req.body.username);
     res.status(200).json({
       user_id: userInfo[0].user_id,
-      username: userInfo[0].username
+      username: userInfo[0].username,
+      hackcoin: userInfo[0].hackcoin
     });
   }
-
 });
 
 app.post('/coin', async (req, res) => {
-  console.log(req.body);
   let currentHackCoins = await db.checkCoin(req.body.userId);
-  console.log('currentHackCoins', currentHackCoins);
-
   currentHackCoins = currentHackCoins.pop().hackcoin;
-  console.log('currentHackCoins', currentHackCoins);
-  if(currentHackCoins > 0 && req.body.hackCoins <= currentHackCoins) { //user has usable coins and asking to use a number of some available -- good update db
+
+  if (currentHackCoins > 0 && req.body.hackCoins <= currentHackCoins) { //user has usable coins and asking to use a number of some available -- good update db
     await db.subtractCoins(currentHackCoins, req.body.hackCoins, req.body.userId, req.body.commentId);
     res.status(200).end();
   } else if(currentHackCoins > 0 && req.body.hackCoins > currentHackCoins) { //if usable coins but asking to use more than available
@@ -105,7 +104,7 @@ app.post('/coin', async (req, res) => {
   } else if(currentHackCoins <= 0) {  //if no usable coins
     res.status(409).end();  //send something in the body for client
   } else {
-    console.log('unexpected edge case', 'currentHackCoins', currentHackCoins,  req.body,);
+    console.log('unexpected edge case', 'currentHackCoins', currentHackCoins,  req.body);
   }
 });
 
@@ -115,7 +114,7 @@ app.post('/solution', async (req, res) => {
   res.status(200).end();
 });
 
-app.get('*', (req, res) => { res.redirect('/') });
+app.get('*', (req, res) => res.redirect('/'));
 
 app.listen(process.env.PORT || 3000, function () {
   console.log('listening on port 3000!');

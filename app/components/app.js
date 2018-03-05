@@ -2,6 +2,7 @@ angular.module('app')
 
 .controller('AppCtrl', function (postsService, $rootScope) {
   $rootScope.userId = 0;
+  $rootScope.hackcoin = 0;
 })
 .component('app', {
   bindings: {},
@@ -18,14 +19,6 @@ angular.module('app')
       templateUrl: 'templates/submit.html',
       controller: 'SubmitCtrl'
     })
-    .when('/login', {
-      templateUrl: 'templates/login.html',
-      controller: 'LoginCtrl'
-    })
-    .when('/register', {
-      templateUrl: 'templates/register.html',
-      controller: 'RegisterCtrl'
-    })
-    .otherwise({ redirectTo: '/login' });
+    .otherwise({ redirectTo: '/' });
   $locationProvider.html5Mode(true);
 });
